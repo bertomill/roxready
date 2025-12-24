@@ -9,6 +9,9 @@ import PhaseIndicator from '@/components/PhaseIndicator'
 import ProgressBar from '@/components/ProgressBar'
 import WeekView from '@/components/WeekView'
 import SessionModal from '@/components/SessionModal'
+import Link from 'next/link'
+
+const ADMIN_EMAIL = 'bertmill19@gmail.com'
 
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth()
@@ -106,15 +109,25 @@ export default function Home() {
         </div>
         <div className="text-right">
           {user ? (
-            <>
-              <p className="text-sm text-gray-400">{user.email}</p>
-              <button
-                onClick={signOut}
-                className="text-sm text-purple-400 hover:text-purple-300"
-              >
-                Sign Out
-              </button>
-            </>
+            <div className="flex items-center gap-4">
+              {user.email === ADMIN_EMAIL && (
+                <Link
+                  href="/feedback"
+                  className="text-sm text-purple-400 hover:text-purple-300"
+                >
+                  Feedback
+                </Link>
+              )}
+              <div>
+                <p className="text-sm text-gray-400">{user.email}</p>
+                <button
+                  onClick={signOut}
+                  className="text-sm text-purple-400 hover:text-purple-300"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
           ) : (
             <button
               onClick={() => setShowAuthModal(true)}
