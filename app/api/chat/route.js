@@ -28,20 +28,44 @@ You have deep knowledge of:
 - Recovery and nutrition for athletes
 - Pacing strategies and race tactics
 
-Be concise but helpful. Give practical, actionable advice. If asked about form or technique, be specific about body positioning and common mistakes. Reference the current workout when relevant.`
+Format your responses using markdown:
+- Use **bold** for emphasis
+- Use bullet points for lists
+- Use ### for section headers
+- Keep responses concise but thorough
 
-    const completion = await openai.chat.completions.create({
+Be helpful and give practical, actionable advice. If asked about form or technique, be specific about body positioning and common mistakes.`
+
+    const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: 500,
+      max_tokens: 800,
       temperature: 0.7,
+      stream: true,
     })
 
-    return Response.json({
-      message: completion.choices[0].message.content
+    // Create a ReadableStream to send chunks to the client
+    const encoder = new TextEncoder()
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of stream) {
+          const content = chunk.choices[0]?.delta?.content || ''
+          if (content) {
+            controller.enqueue(encoder.encode(content))
+          }
+        }
+        controller.close()
+      },
+    })
+
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+      },
     })
   } catch (error) {
     console.error('Chat API error:', error)

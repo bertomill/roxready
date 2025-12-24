@@ -1,10 +1,12 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 export default function WorkoutChat({ session, isOpen, onToggle }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [streamingContent, setStreamingContent] = useState('')
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -13,7 +15,7 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, streamingContent])
 
   // Build workout context for AI
   const buildWorkoutContext = () => {
@@ -51,6 +53,7 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
+    setStreamingContent('')
 
     try {
       const response = await fetch('/api/chat', {
@@ -62,24 +65,36 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
         })
       })
 
-      const data = await response.json()
-
-      if (data.error) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.'
-        }])
-      } else {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.message
-        }])
+      if (!response.ok) {
+        throw new Error('Failed to get response')
       }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let fullContent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        fullContent += chunk
+        setStreamingContent(fullContent)
+      }
+
+      // Add complete message to messages array
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: fullContent
+      }])
+      setStreamingContent('')
+
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Sorry, I couldn\'t connect. Please try again.'
       }])
+      setStreamingContent('')
     } finally {
       setIsLoading(false)
     }
@@ -115,8 +130,8 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
       {isOpen && (
         <div className="mt-3 border border-gray-600 rounded-lg overflow-hidden">
           {/* Chat Messages */}
-          <div className="h-64 overflow-y-auto p-4 bg-gray-900/50 space-y-3">
-            {messages.length === 0 ? (
+          <div className="h-72 overflow-y-auto p-4 bg-gray-900/50 space-y-4">
+            {messages.length === 0 && !streamingContent ? (
               <div className="text-center text-gray-500 py-4">
                 <p className="text-sm mb-3">Ask me anything about this workout!</p>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -132,33 +147,76 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
                 </div>
               </div>
             ) : (
-              messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+              <>
+                {messages.map((msg, i) => (
                   <div
-                    className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                      msg.role === 'user'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-700 text-gray-200'
-                    }`}
+                    key={i}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {msg.content}
+                    <div
+                      className={`max-w-[90%] rounded-lg px-4 py-3 ${
+                        msg.role === 'user'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-700 text-gray-200'
+                      }`}
+                    >
+                      {msg.role === 'assistant' ? (
+                        <div className="prose prose-sm prose-invert max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              h3: ({ children }) => <h3 className="text-base font-semibold mt-3 mb-2 text-white">{children}</h3>,
+                              h4: ({ children }) => <h4 className="text-sm font-semibold mt-2 mb-1 text-white">{children}</h4>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="text-sm">{msg.content}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-700 rounded-lg px-4 py-2">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                ))}
+                {/* Streaming content */}
+                {streamingContent && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[90%] rounded-lg px-4 py-3 bg-gray-700 text-gray-200">
+                      <div className="prose prose-sm prose-invert max-w-none">
+                        <ReactMarkdown
+                          components={{
+                            h3: ({ children }) => <h3 className="text-base font-semibold mt-3 mb-2 text-white">{children}</h3>,
+                            h4: ({ children }) => <h4 className="text-sm font-semibold mt-2 mb-1 text-white">{children}</h4>,
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                            li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                          }}
+                        >
+                          {streamingContent}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
+                {/* Loading dots when waiting to start streaming */}
+                {isLoading && !streamingContent && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-700 rounded-lg px-4 py-3">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div ref={messagesEndRef} />
           </div>
