@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-export default function Auth() {
+export default function Auth({ onClose }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -42,8 +42,16 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-md">
+    <div className={onClose ? '' : 'min-h-screen flex items-center justify-center p-4'}>
+      <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-md relative">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl"
+          >
+            ×
+          </button>
+        )}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">RoxReady</h1>
           <p className="text-gray-400 mt-2">Hyrox Training Planner</p>

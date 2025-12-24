@@ -16,6 +16,7 @@ export default function Home() {
   const { notes, saveNote } = useSessionNotes(user?.id)
   const [selectedSession, setSelectedSession] = useState(null)
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   // Calculate current week based on today's date
   const currentWeekNumber = useMemo(() => {
@@ -28,12 +29,29 @@ export default function Home() {
   const displayWeekIndex = selectedWeekIndex ?? currentWeekNumber - 1
   const currentWeek = trainingPlan.weeks[displayWeekIndex]
 
-  // Calculate progress
-  const weekCompleted = currentWeek.sessions.filter((s) =>
+  // Calculate progress (only for logged in users)
+  const weekCompleted = user ? currentWeek.sessions.filter((s) =>
     completedSessions.includes(s.id)
-  ).length
-  const totalCompleted = completedSessions.length
+  ).length : 0
+  const totalCompleted = user ? completedSessions.length : 0
   const totalSessions = trainingPlan.weeks.reduce((acc, w) => acc + w.sessions.length, 0)
+
+  // Handle actions that require auth
+  const handleToggleSession = (sessionId) => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    toggleSession(sessionId)
+  }
+
+  const handleSaveNote = (sessionId, note) => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    saveNote(sessionId, note)
+  }
 
   // Show loading state
   if (authLoading) {
@@ -44,13 +62,8 @@ export default function Home() {
     )
   }
 
-  // Show auth screen if not logged in
-  if (!user) {
-    return <Auth />
-  }
-
-  // Show loading state for sessions
-  if (sessionsLoading) {
+  // Show loading state for sessions (only when logged in)
+  if (user && sessionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-gray-400">Loading your training data...</div>
@@ -72,15 +85,41 @@ export default function Home() {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-gray-400">{user.email}</p>
-          <button
-            onClick={signOut}
-            className="text-sm text-purple-400 hover:text-purple-300"
-          >
-            Sign Out
-          </button>
+          {user ? (
+            <>
+              <p className="text-sm text-gray-400">{user.email}</p>
+              <button
+                onClick={signOut}
+                className="text-sm text-purple-400 hover:text-purple-300"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </header>
+
+      {/* Guest Banner */}
+      {!user && (
+        <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-4 mb-6 flex items-center justify-between">
+          <p className="text-purple-200 text-sm">
+            Sign in to track your progress and add notes to workouts
+          </p>
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -104,10 +143,10 @@ export default function Home() {
           {trainingPlan.weeks.map((week, index) => {
             const isCurrentWeek = week.weekNumber === currentWeekNumber
             const isSelected = index === displayWeekIndex
-            const weekCompletedCount = week.sessions.filter((s) =>
+            const weekCompletedCount = user ? week.sessions.filter((s) =>
               completedSessions.includes(s.id)
-            ).length
-            const allComplete = weekCompletedCount === 7
+            ).length : 0
+            const allComplete = user && weekCompletedCount === 7
 
             return (
               <button
@@ -135,21 +174,33 @@ export default function Home() {
       {/* Current Week View */}
       <WeekView
         week={currentWeek}
-        completedSessions={completedSessions}
-        onToggleSession={toggleSession}
+        completedSessions={user ? completedSessions : []}
+        onToggleSession={handleToggleSession}
         onSelectSession={setSelectedSession}
+        isGuest={!user}
       />
 
       {/* Session Modal */}
       {selectedSession && (
         <SessionModal
           session={selectedSession}
-          isCompleted={completedSessions.includes(selectedSession.id)}
-          onToggle={toggleSession}
+          isCompleted={user && completedSessions.includes(selectedSession.id)}
+          onToggle={handleToggleSession}
           onClose={() => setSelectedSession(null)}
-          userNote={notes[selectedSession.id]}
-          onSaveNote={saveNote}
+          userNote={user ? notes[selectedSession.id] : undefined}
+          onSaveNote={handleSaveNote}
+          isGuest={!user}
+          onSignIn={() => setShowAuthModal(true)}
         />
+      )}
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowAuthModal(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Auth onClose={() => setShowAuthModal(false)} />
+          </div>
+        </div>
       )}
     </main>
   )

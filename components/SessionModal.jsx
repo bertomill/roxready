@@ -10,7 +10,7 @@ const typeColors = {
   mixed: 'bg-orange-500'
 }
 
-export default function SessionModal({ session, isCompleted, onToggle, onClose, userNote, onSaveNote }) {
+export default function SessionModal({ session, isCompleted, onToggle, onClose, userNote, onSaveNote, isGuest, onSignIn }) {
   const [note, setNote] = useState(userNote || '')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -93,39 +93,56 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
             </div>
           )}
 
-          {/* User Notes Section */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Your Notes</h3>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Add your notes here... (times, reps, how you felt, etc.)"
-              className="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 resize-none"
-              rows={3}
-            />
-            {hasNoteChanged && (
-              <button
-                onClick={handleSaveNote}
-                disabled={isSaving}
-                className="mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
-              >
-                {isSaving ? 'Saving...' : 'Save Note'}
-              </button>
-            )}
-          </div>
+          {/* User Notes Section - Only for logged in users */}
+          {!isGuest && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Your Notes</h3>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Add your notes here... (times, reps, how you felt, etc.)"
+                className="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 resize-none"
+                rows={3}
+              />
+              {hasNoteChanged && (
+                <button
+                  onClick={handleSaveNote}
+                  disabled={isSaving}
+                  className="mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                >
+                  {isSaving ? 'Saving...' : 'Save Note'}
+                </button>
+              )}
+            </div>
+          )}
 
-          <button
-            onClick={() => onToggle(session.id)}
-            className={`
-              w-full py-3 rounded-xl font-semibold transition-colors
-              ${isCompleted
-                ? 'bg-gray-600 hover:bg-gray-500 text-white'
-                : 'bg-green-500 hover:bg-green-400 text-white'
-              }
-            `}
-          >
-            {isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
-          </button>
+          {/* Guest Sign In Prompt */}
+          {isGuest ? (
+            <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-4 text-center">
+              <p className="text-purple-200 text-sm mb-3">
+                Sign in to track this workout and add notes
+              </p>
+              <button
+                onClick={onSignIn}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
+              >
+                Sign In to Track
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => onToggle(session.id)}
+              className={`
+                w-full py-3 rounded-xl font-semibold transition-colors
+                ${isCompleted
+                  ? 'bg-gray-600 hover:bg-gray-500 text-white'
+                  : 'bg-green-500 hover:bg-green-400 text-white'
+                }
+              `}
+            >
+              {isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
+            </button>
+          )}
         </div>
       </div>
     </div>
