@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+.pnpm-debug.log*
+
+# next.js
+.next/
+out/
+
+# production
+build
+
+# env files
+.env*.local
+
+# debug
+npm-debug.log*
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
