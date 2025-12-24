@@ -188,3 +188,56 @@ export function useAuth() {
 
   return { user, loading, signOut }
 }
+
+export function useFeedback() {
+  const [feedback, setFeedback] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchFeedback = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching feedback:', error)
+    } else {
+      setFeedback(data || [])
+    }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    fetchFeedback()
+  }, [fetchFeedback])
+
+  const submitFeedback = useCallback(async (message, userEmail = null) => {
+    const { error } = await supabase
+      .from('feedback')
+      .insert({ message, user_email: userEmail })
+
+    if (error) {
+      console.error('Error submitting feedback:', error)
+      return false
+    }
+    return true
+  }, [])
+
+  const markAsAddressed = useCallback(async (feedbackId, addressed) => {
+    const { error } = await supabase
+      .from('feedback')
+      .update({ addressed })
+      .eq('id', feedbackId)
+
+    if (error) {
+      console.error('Error updating feedback:', error)
+      return false
+    }
+    setFeedback(prev => prev.map(item =>
+      item.id === feedbackId ? { ...item, addressed } : item
+    ))
+    return true
+  }, [])
+
+  return { feedback, loading, submitFeedback, markAsAddressed, refetch: fetchFeedback }
+}
