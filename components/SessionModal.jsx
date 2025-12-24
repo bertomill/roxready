@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { findExerciseDetails } from '@/data/exerciseLibrary'
+import WorkoutChat from './WorkoutChat'
 
 const typeColors = {
   strength: 'bg-red-500',
@@ -124,6 +125,7 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
   const [isSaving, setIsSaving] = useState(false)
   const [showExercises, setShowExercises] = useState(false)
   const [expandedExercises, setExpandedExercises] = useState({})
+  const [showChat, setShowChat] = useState(false)
 
   useEffect(() => {
     setNote(userNote || '')
@@ -254,6 +256,13 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
               )}
             </div>
           )}
+
+          {/* AI Coach Chat */}
+          <WorkoutChat
+            session={session}
+            isOpen={showChat}
+            onToggle={() => setShowChat(!showChat)}
+          />
 
           {/* User Notes Section - Only for logged in users */}
           {!isGuest && (
