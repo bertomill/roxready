@@ -1,7 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { differenceInWeeks } from 'date-fns'
-import { useAuth, useCompletedSessions } from '@/hooks/useSupabase'
+import { useAuth, useCompletedSessions, useSessionNotes } from '@/hooks/useSupabase'
 import { trainingPlan, START_DATE } from '@/data/trainingData'
 import Auth from '@/components/Auth'
 import Countdown from '@/components/Countdown'
@@ -13,6 +13,7 @@ import SessionModal from '@/components/SessionModal'
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth()
   const { completedSessions, toggleSession, loading: sessionsLoading } = useCompletedSessions(user?.id)
+  const { notes, saveNote } = useSessionNotes(user?.id)
   const [selectedSession, setSelectedSession] = useState(null)
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(null)
 
@@ -146,6 +147,8 @@ export default function Home() {
           isCompleted={completedSessions.includes(selectedSession.id)}
           onToggle={toggleSession}
           onClose={() => setSelectedSession(null)}
+          userNote={notes[selectedSession.id]}
+          onSaveNote={saveNote}
         />
       )}
     </main>

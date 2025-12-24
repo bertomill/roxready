@@ -90,6 +90,77 @@ export function useCompletedSessions(userId) {
   return { completedSessions, toggleSession, loading }
 }
 
+export function useSessionNotes(userId) {
+  const [notes, setNotes] = useState({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false)
+      return
+    }
+
+    const fetchNotes = async () => {
+      const { data, error } = await supabase
+        .from('session_notes')
+        .select('session_id, note')
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Error fetching notes:', error)
+      } else {
+        const notesMap = {}
+        data.forEach(row => {
+          notesMap[row.session_id] = row.note
+        })
+        setNotes(notesMap)
+      }
+      setLoading(false)
+    }
+
+    fetchNotes()
+  }, [userId])
+
+  const saveNote = useCallback(async (sessionId, note) => {
+    if (!userId) return
+
+    if (!note || note.trim() === '') {
+      // Delete note if empty
+      const { error } = await supabase
+        .from('session_notes')
+        .delete()
+        .eq('user_id', userId)
+        .eq('session_id', sessionId)
+
+      if (error) {
+        console.error('Error deleting note:', error)
+      } else {
+        setNotes(prev => {
+          const updated = { ...prev }
+          delete updated[sessionId]
+          return updated
+        })
+      }
+    } else {
+      // Upsert note
+      const { error } = await supabase
+        .from('session_notes')
+        .upsert(
+          { user_id: userId, session_id: sessionId, note: note.trim(), updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,session_id' }
+        )
+
+      if (error) {
+        console.error('Error saving note:', error)
+      } else {
+        setNotes(prev => ({ ...prev, [sessionId]: note.trim() }))
+      }
+    }
+  }, [userId])
+
+  return { notes, saveNote, loading }
+}
+
 export function useAuth() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)

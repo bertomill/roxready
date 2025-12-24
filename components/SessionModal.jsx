@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { format, parseISO } from 'date-fns'
 
 const typeColors = {
@@ -9,10 +10,25 @@ const typeColors = {
   mixed: 'bg-orange-500'
 }
 
-export default function SessionModal({ session, isCompleted, onToggle, onClose }) {
+export default function SessionModal({ session, isCompleted, onToggle, onClose, userNote, onSaveNote }) {
+  const [note, setNote] = useState(userNote || '')
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    setNote(userNote || '')
+  }, [userNote, session?.id])
+
   if (!session) return null
 
   const sessionDate = parseISO(session.date)
+
+  const handleSaveNote = async () => {
+    setIsSaving(true)
+    await onSaveNote(session.id, note)
+    setIsSaving(false)
+  }
+
+  const hasNoteChanged = note !== (userNote || '')
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={onClose}>
@@ -72,10 +88,31 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose }
 
           {session.details?.notes && (
             <div className="bg-gray-700/50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">Notes</h3>
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">Workout Tips</h3>
               <p className="text-gray-300 text-sm">{session.details.notes}</p>
             </div>
           )}
+
+          {/* User Notes Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Your Notes</h3>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add your notes here... (times, reps, how you felt, etc.)"
+              className="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 resize-none"
+              rows={3}
+            />
+            {hasNoteChanged && (
+              <button
+                onClick={handleSaveNote}
+                disabled={isSaving}
+                className="mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+              >
+                {isSaving ? 'Saving...' : 'Save Note'}
+              </button>
+            )}
+          </div>
 
           <button
             onClick={() => onToggle(session.id)}
