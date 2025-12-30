@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
+import Logo from '@/components/Logo'
 
 export default function HyroxKnowledge() {
   const [messages, setMessages] = useState([])
@@ -81,9 +82,12 @@ export default function HyroxKnowledge() {
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
       {/* Header */}
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Hyrox Knowledge</h1>
-        <p className="text-gray-400 text-sm">Ask me anything about Hyrox racing, training, and strategy</p>
+      <header className="mb-6 flex items-center gap-3">
+        <Logo className="w-10 h-10" />
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">Hyrox Knowledge</h1>
+          <p className="text-gray-400 text-sm">Ask me anything about Hyrox racing, training, and strategy</p>
+        </div>
       </header>
 
       {/* Chat Container */}

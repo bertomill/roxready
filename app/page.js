@@ -9,6 +9,7 @@ import PhaseIndicator from '@/components/PhaseIndicator'
 import ProgressBar from '@/components/ProgressBar'
 import WeekView from '@/components/WeekView'
 import SessionModal from '@/components/SessionModal'
+import Logo from '@/components/Logo'
 import Link from 'next/link'
 
 const ADMIN_EMAIL = 'bertmill19@gmail.com'
@@ -107,9 +108,12 @@ export default function Home() {
     <main className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
       {/* Simple Header */}
       <header className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">RoxReady</h1>
-          <p className="text-gray-500 text-sm">Week {currentWeek.weekNumber} • {currentWeek.phaseName}</p>
+        <div className="flex items-center gap-3">
+          <Logo className="w-10 h-10" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">RoxReady</h1>
+            <p className="text-gray-500 text-sm">Week {currentWeek.weekNumber} • {currentWeek.phaseName}</p>
+          </div>
         </div>
         {user ? (
           <button

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Logo from './Logo'
 
 export default function Auth({ onClose }) {
   const [email, setEmail] = useState('')
@@ -57,6 +58,9 @@ export default function Auth({ onClose }) {
         )}
 
         <div className="text-center mb-10 relative z-10">
+          <div className="flex justify-center mb-4">
+            <Logo className="w-16 h-16" />
+          </div>
           <h1 className="text-4xl font-bold text-white mb-2">RoxReady</h1>
           <p className="text-gray-400 text-sm">Hyrox Training Planner</p>
         </div>
