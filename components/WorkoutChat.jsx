@@ -111,14 +111,14 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between py-4 px-5 bg-dark-card border border-dark-border hover:bg-dark-cardHover rounded-xl transition-colors"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🤖</span>
-          <span className="font-medium">Ask AI Coach</span>
+          <span className="font-medium text-white">Ask AI Coach</span>
         </div>
         <svg
-          className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -128,18 +128,18 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
       </button>
 
       {isOpen && (
-        <div className="mt-3 border border-gray-600 rounded-lg overflow-hidden">
+        <div className="mt-3 border border-dark-border rounded-xl overflow-hidden bg-gradient-card">
           {/* Chat Messages */}
-          <div className="h-72 overflow-y-auto p-4 bg-gray-900/50 space-y-4">
+          <div className="h-72 overflow-y-auto p-4 bg-dark-bg/50 space-y-4">
             {messages.length === 0 && !streamingContent ? (
-              <div className="text-center text-gray-500 py-4">
+              <div className="text-center text-gray-400 py-4">
                 <p className="text-sm mb-3">Ask me anything about this workout!</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {suggestedQuestions.map((q, i) => (
                     <button
                       key={i}
                       onClick={() => setInput(q)}
-                      className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full transition-colors"
+                      className="text-xs bg-dark-card hover:bg-dark-cardHover border border-dark-border text-gray-300 px-3 py-1.5 rounded-full transition-colors"
                     >
                       {q}
                     </button>
@@ -154,22 +154,22 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[90%] rounded-lg px-4 py-3 ${
+                      className={`max-w-[90%] rounded-xl px-4 py-3 ${
                         msg.role === 'user'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-700 text-gray-200'
+                          ? 'bg-gradient-primary text-white shadow-lg'
+                          : 'bg-dark-card border border-dark-border text-gray-200'
                       }`}
                     >
                       {msg.role === 'assistant' ? (
-                        <div className="prose prose-sm prose-invert max-w-none">
+                        <div className="prose prose-sm max-w-none">
                           <ReactMarkdown
                             components={{
                               h3: ({ children }) => <h3 className="text-base font-semibold mt-3 mb-2 text-white">{children}</h3>,
                               h4: ({ children }) => <h4 className="text-sm font-semibold mt-2 mb-1 text-white">{children}</h4>,
-                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
                               ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
                               ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                              li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                              li: ({ children }) => <li className="text-gray-300">{children}</li>,
                               strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
                             }}
                           >
@@ -185,16 +185,16 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
                 {/* Streaming content */}
                 {streamingContent && (
                   <div className="flex justify-start">
-                    <div className="max-w-[90%] rounded-lg px-4 py-3 bg-gray-700 text-gray-200">
-                      <div className="prose prose-sm prose-invert max-w-none">
+                    <div className="max-w-[90%] rounded-xl px-4 py-3 bg-dark-card border border-dark-border text-gray-200">
+                      <div className="prose prose-sm max-w-none">
                         <ReactMarkdown
                           components={{
                             h3: ({ children }) => <h3 className="text-base font-semibold mt-3 mb-2 text-white">{children}</h3>,
                             h4: ({ children }) => <h4 className="text-sm font-semibold mt-2 mb-1 text-white">{children}</h4>,
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
                             ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
                             ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                            li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                            li: ({ children }) => <li className="text-gray-300">{children}</li>,
                             strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
                           }}
                         >
@@ -207,7 +207,7 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
                 {/* Loading dots when waiting to start streaming */}
                 {isLoading && !streamingContent && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-700 rounded-lg px-4 py-3">
+                    <div className="bg-dark-card border border-dark-border rounded-xl px-4 py-3">
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                         <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -222,20 +222,20 @@ export default function WorkoutChat({ session, isOpen, onToggle }) {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-3 bg-gray-800 border-t border-gray-700">
+          <form onSubmit={handleSubmit} className="p-3 bg-dark-card border-t border-dark-border">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about this workout..."
-                className="flex-1 px-3 py-2 bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 bg-gradient-primary text-white rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-lg"
               >
                 Send
               </button>

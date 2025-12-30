@@ -2,19 +2,19 @@
 import { format, isToday, parseISO } from 'date-fns'
 
 const typeColors = {
-  strength: 'border-red-500 bg-red-500/10',
-  running: 'border-blue-500 bg-blue-500/10',
-  simulation: 'border-purple-500 bg-purple-500/10',
-  recovery: 'border-green-500 bg-green-500/10',
-  mixed: 'border-orange-500 bg-orange-500/10'
+  strength: 'border-l-rose-500 bg-gradient-card',
+  running: 'border-l-primary-500 bg-gradient-card',
+  simulation: 'border-l-indigo-500 bg-gradient-card',
+  recovery: 'border-l-emerald-500 bg-gradient-card',
+  mixed: 'border-l-accent-500 bg-gradient-card'
 }
 
 const typeBadgeColors = {
-  strength: 'bg-red-500',
-  running: 'bg-blue-500',
-  simulation: 'bg-purple-500',
-  recovery: 'bg-green-500',
-  mixed: 'bg-orange-500'
+  strength: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+  running: 'bg-primary-500/20 text-primary-400 border border-primary-500/30',
+  simulation: 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30',
+  recovery: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+  mixed: 'bg-accent-500/20 text-accent-400 border border-accent-500/30'
 }
 
 export default function SessionCard({ session, isCompleted, onToggle, onSelect }) {
@@ -24,16 +24,16 @@ export default function SessionCard({ session, isCompleted, onToggle, onSelect }
   return (
     <div
       className={`
-        relative border-l-4 rounded-lg p-4 cursor-pointer transition-all
+        relative border-l-4 border border-dark-border rounded-2xl p-4 cursor-pointer transition-all
         ${typeColors[session.type]}
         ${isCompleted ? 'opacity-50' : ''}
-        ${isSessionToday ? 'ring-2 ring-yellow-400' : ''}
-        hover:scale-[1.02] hover:shadow-lg
+        ${isSessionToday ? 'ring-2 ring-primary-500/50 shadow-xl' : 'shadow-lg'}
+        hover:scale-[1.02] hover:shadow-2xl hover:border-dark-border/50
       `}
       onClick={() => onSelect(session)}
     >
       {isSessionToday && (
-        <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded-full">
+        <span className="absolute -top-2 -right-2 bg-gradient-primary text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
           TODAY
         </span>
       )}
@@ -41,18 +41,18 @@ export default function SessionCard({ session, isCompleted, onToggle, onSelect }
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={`text-xs px-2 py-0.5 rounded ${typeBadgeColors[session.type]}`}>
+            <span className={`text-xs px-2 py-1 rounded-lg font-medium ${typeBadgeColors[session.type]}`}>
               {session.type}
             </span>
-            <span className="text-xs text-gray-400">{session.duration}</span>
+            <span className="text-xs text-gray-500">{session.duration}</span>
           </div>
-          <p className="text-xs text-gray-400">{session.day}</p>
-          <h3 className={`font-semibold ${isCompleted ? 'line-through' : ''}`}>
+          <p className="text-xs text-gray-500 uppercase tracking-wide">{session.day}</p>
+          <h3 className={`font-semibold text-white mt-1 ${isCompleted ? 'line-through' : ''}`}>
             {session.title}
           </h3>
           <p className="text-sm text-gray-400 truncate">{session.description}</p>
           {session.targetPace && (
-            <p className="text-xs text-blue-400 mt-1">Target: {session.targetPace}</p>
+            <p className="text-xs text-primary-400 mt-2 font-medium">Target: {session.targetPace}</p>
           )}
         </div>
 
@@ -62,10 +62,10 @@ export default function SessionCard({ session, isCompleted, onToggle, onSelect }
             onToggle(session.id)
           }}
           className={`
-            w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0
+            w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all
             ${isCompleted
-              ? 'bg-green-500 border-green-500 text-white'
-              : 'border-gray-500 hover:border-green-400'
+              ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg'
+              : 'border-gray-600 hover:border-emerald-500'
             }
           `}
         >

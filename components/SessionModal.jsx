@@ -5,23 +5,23 @@ import { findExerciseDetails } from '@/data/exerciseLibrary'
 import WorkoutChat from './WorkoutChat'
 
 const typeColors = {
-  strength: 'bg-red-500',
-  running: 'bg-blue-500',
-  simulation: 'bg-purple-500',
-  recovery: 'bg-green-500',
-  mixed: 'bg-orange-500'
+  strength: 'bg-gradient-to-br from-rose-600 to-rose-700',
+  running: 'bg-gradient-to-br from-primary-600 to-primary-700',
+  simulation: 'bg-gradient-to-br from-indigo-600 to-indigo-700',
+  recovery: 'bg-gradient-to-br from-emerald-600 to-emerald-700',
+  mixed: 'bg-gradient-to-br from-accent-600 to-accent-700'
 }
 
 function ExerciseDetail({ exercise, isExpanded, onToggle }) {
   return (
-    <div className="border border-gray-600 rounded-lg overflow-hidden">
+    <div className="border border-dark-border rounded-xl overflow-hidden bg-gradient-card">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 bg-gray-700/50 hover:bg-gray-700 transition-colors text-left"
+        className="w-full flex items-center justify-between p-4 bg-dark-card/50 hover:bg-dark-cardHover transition-colors text-left"
       >
         <div>
-          <span className="font-medium">{exercise.name}</span>
-          <span className="text-xs text-gray-400 ml-2">{exercise.category}</span>
+          <span className="font-medium text-white">{exercise.name}</span>
+          <span className="text-xs text-gray-500 ml-2">{exercise.category}</span>
         </div>
         <svg
           className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -34,13 +34,13 @@ function ExerciseDetail({ exercise, isExpanded, onToggle }) {
       </button>
 
       {isExpanded && (
-        <div className="p-4 bg-gray-800/50 space-y-4">
+        <div className="p-4 bg-dark-bg/50 space-y-4">
           {/* Muscles */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Muscles Worked</p>
-            <div className="flex flex-wrap gap-1">
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">Muscles Worked</p>
+            <div className="flex flex-wrap gap-1.5">
               {exercise.muscles.map((muscle, i) => (
-                <span key={i} className="text-xs bg-gray-700 px-2 py-0.5 rounded">
+                <span key={i} className="text-xs bg-dark-card border border-dark-border text-gray-300 px-2.5 py-1 rounded-lg">
                   {muscle}
                 </span>
               ))}
@@ -49,11 +49,11 @@ function ExerciseDetail({ exercise, isExpanded, onToggle }) {
 
           {/* Step by Step */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Step-by-Step</p>
-            <ol className="space-y-2">
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 font-medium">Step-by-Step</p>
+            <ol className="space-y-2.5">
               {exercise.steps.map((step, i) => (
                 <li key={i} className="flex gap-3 text-sm">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-600 text-xs flex items-center justify-center">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-primary text-white text-xs flex items-center justify-center font-medium shadow-lg">
                     {i + 1}
                   </span>
                   <span className="text-gray-300">{step}</span>
@@ -65,11 +65,11 @@ function ExerciseDetail({ exercise, isExpanded, onToggle }) {
           {/* Tips */}
           {exercise.tips && (
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Pro Tips</p>
-              <ul className="space-y-1">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">Pro Tips</p>
+              <ul className="space-y-2">
                 {exercise.tips.map((tip, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-400">
-                    <span className="text-yellow-500">💡</span>
+                  <li key={i} className="flex gap-2 text-sm text-gray-300">
+                    <span className="text-accent-400">💡</span>
                     <span>{tip}</span>
                   </li>
                 ))}
@@ -79,37 +79,37 @@ function ExerciseDetail({ exercise, isExpanded, onToggle }) {
 
           {/* Hyrox Specific Info */}
           {exercise.hyroxSpecific && (
-            <div className="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
-              <p className="text-xs text-purple-400 uppercase tracking-wide mb-2">Hyrox Race Info</p>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-4">
+              <p className="text-xs text-primary-400 uppercase tracking-wide mb-3 font-medium">Hyrox Race Info</p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 {exercise.hyroxSpecific.distance && (
                   <div>
-                    <span className="text-gray-500">Distance:</span>
-                    <span className="ml-1 text-gray-200">{exercise.hyroxSpecific.distance}</span>
+                    <span className="text-gray-400">Distance:</span>
+                    <span className="ml-1 text-white font-medium">{exercise.hyroxSpecific.distance}</span>
                   </div>
                 )}
                 {exercise.hyroxSpecific.weight && (
                   <div>
-                    <span className="text-gray-500">Weight:</span>
-                    <span className="ml-1 text-gray-200">{exercise.hyroxSpecific.weight}</span>
+                    <span className="text-gray-400">Weight:</span>
+                    <span className="ml-1 text-white font-medium">{exercise.hyroxSpecific.weight}</span>
                   </div>
                 )}
                 {exercise.hyroxSpecific.reps && (
                   <div>
-                    <span className="text-gray-500">Reps:</span>
-                    <span className="ml-1 text-gray-200">{exercise.hyroxSpecific.reps}</span>
+                    <span className="text-gray-400">Reps:</span>
+                    <span className="ml-1 text-white font-medium">{exercise.hyroxSpecific.reps}</span>
                   </div>
                 )}
                 {exercise.hyroxSpecific.target && (
                   <div>
-                    <span className="text-gray-500">Target:</span>
-                    <span className="ml-1 text-gray-200">{exercise.hyroxSpecific.target}</span>
+                    <span className="text-gray-400">Target:</span>
+                    <span className="ml-1 text-white font-medium">{exercise.hyroxSpecific.target}</span>
                   </div>
                 )}
               </div>
               {exercise.hyroxSpecific.strategy && (
-                <p className="text-sm text-purple-200 mt-2">
-                  <span className="text-purple-400">Strategy:</span> {exercise.hyroxSpecific.strategy}
+                <p className="text-sm text-primary-300 mt-3">
+                  <span className="text-primary-200 font-medium">Strategy:</span> {exercise.hyroxSpecific.strategy}
                 </p>
               )}
             </div>
@@ -158,17 +158,17 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div
-        className="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-gradient-card border border-dark-border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`${typeColors[session.type]} p-6 rounded-t-2xl`}>
+        <div className={`${typeColors[session.type]} p-6 rounded-t-2xl shadow-lg`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm opacity-80">{session.day} • {format(sessionDate, 'MMM d, yyyy')}</p>
-              <h2 className="text-2xl font-bold mt-1">{session.title}</h2>
-              <p className="text-sm opacity-80 mt-1">{session.description}</p>
+              <p className="text-sm text-white/80">{session.day} • {format(sessionDate, 'MMM d, yyyy')}</p>
+              <h2 className="text-2xl font-bold mt-1 text-white">{session.title}</h2>
+              <p className="text-sm text-white/80 mt-1">{session.description}</p>
             </div>
             <button
               onClick={onClose}
@@ -179,13 +179,13 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
           </div>
           <div className="flex gap-4 mt-4">
             <div className="text-center">
-              <p className="text-xs opacity-70">Duration</p>
-              <p className="font-semibold">{session.duration}</p>
+              <p className="text-xs text-white/70">Duration</p>
+              <p className="font-semibold text-white">{session.duration}</p>
             </div>
             {session.targetPace && (
               <div className="text-center">
-                <p className="text-xs opacity-70">Target Pace</p>
-                <p className="font-semibold">{session.targetPace}</p>
+                <p className="text-xs text-white/70">Target Pace</p>
+                <p className="font-semibold text-white">{session.targetPace}</p>
               </div>
             )}
           </div>
@@ -195,13 +195,13 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
           {session.details?.warmup && (
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Warm-up</h3>
-              <p className="text-gray-200">{session.details.warmup}</p>
+              <p className="text-white">{session.details.warmup}</p>
             </div>
           )}
 
           {session.details?.main && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Main Workout</h3>
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Main Workout</h3>
               <ul className="space-y-2">
                 {session.details.main.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -214,8 +214,8 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
           )}
 
           {session.details?.notes && (
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">Workout Tips</h3>
+            <div className="bg-dark-card/50 border border-dark-border rounded-xl p-4">
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Workout Tips</h3>
               <p className="text-gray-300 text-sm">{session.details.notes}</p>
             </div>
           )}
@@ -225,12 +225,12 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
             <div>
               <button
                 onClick={() => setShowExercises(!showExercises)}
-                className="w-full flex items-center justify-between py-3 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                className="w-full flex items-center justify-between py-4 px-5 bg-dark-card border border-dark-border hover:bg-dark-cardHover rounded-xl transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📖</span>
-                  <span className="font-medium">Exercise Breakdown</span>
-                  <span className="text-xs text-gray-400">({exercises.length} exercises)</span>
+                  <span className="font-medium text-white">Exercise Breakdown</span>
+                  <span className="text-xs text-gray-500">({exercises.length} exercises)</span>
                 </div>
                 <svg
                   className={`w-5 h-5 text-gray-400 transition-transform ${showExercises ? 'rotate-180' : ''}`}
@@ -243,7 +243,7 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
               </button>
 
               {showExercises && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-3">
                   {exercises.map((exercise, i) => (
                     <ExerciseDetail
                       key={i}
@@ -267,19 +267,19 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
           {/* User Notes Section - Only for logged in users */}
           {!isGuest && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Your Notes</h3>
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Your Notes</h3>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Add your notes here... (times, reps, how you felt, etc.)"
-                className="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 resize-none"
+                className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 resize-none"
                 rows={3}
               />
               {hasNoteChanged && (
                 <button
                   onClick={handleSaveNote}
                   disabled={isSaving}
-                  className="mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  className="mt-3 px-4 py-2 bg-gradient-primary text-white rounded-xl text-sm font-medium disabled:opacity-50 transition-all hover:scale-105 shadow-lg"
                 >
                   {isSaving ? 'Saving...' : 'Save Note'}
                 </button>
@@ -289,13 +289,13 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
 
           {/* Guest Sign In Prompt */}
           {isGuest ? (
-            <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-4 text-center">
-              <p className="text-purple-200 text-sm mb-3">
+            <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-5 text-center">
+              <p className="text-primary-300 text-sm mb-4">
                 Sign in to track this workout and add notes
               </p>
               <button
                 onClick={onSignIn}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
+                className="px-6 py-2.5 bg-gradient-primary text-white rounded-xl text-sm font-medium transition-all hover:scale-105 shadow-lg"
               >
                 Sign In to Track
               </button>
@@ -304,10 +304,10 @@ export default function SessionModal({ session, isCompleted, onToggle, onClose, 
             <button
               onClick={() => onToggle(session.id)}
               className={`
-                w-full py-3 rounded-xl font-semibold transition-colors
+                w-full py-3.5 rounded-xl font-semibold transition-all shadow-lg
                 ${isCompleted
-                  ? 'bg-gray-600 hover:bg-gray-500 text-white'
-                  : 'bg-green-500 hover:bg-green-400 text-white'
+                  ? 'bg-dark-card border border-dark-border hover:bg-dark-cardHover text-gray-300'
+                  : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
                 }
               `}
             >

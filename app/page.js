@@ -1,6 +1,6 @@
 'use client'
 import { useState, useMemo } from 'react'
-import { differenceInWeeks } from 'date-fns'
+import { differenceInWeeks, format } from 'date-fns'
 import { useAuth, useCompletedSessions, useSessionNotes, useFeedback } from '@/hooks/useSupabase'
 import { trainingPlan, START_DATE } from '@/data/trainingData'
 import Auth from '@/components/Auth'
@@ -48,16 +48,25 @@ export default function Home() {
     return Math.max(1, Math.min(20, weeksSinceStart + 1))
   }, [])
 
-  // Set initial week to current week once loaded
-  const displayWeekIndex = selectedWeekIndex ?? currentWeekNumber - 1
-  const currentWeek = trainingPlan.weeks[displayWeekIndex]
+  // Get current week
+  const currentWeek = trainingPlan.weeks[currentWeekNumber - 1]
 
-  // Calculate progress (only for logged in users)
-  const weekCompleted = user ? currentWeek.sessions.filter((s) =>
-    completedSessions.includes(s.id)
-  ).length : 0
-  const totalCompleted = user ? completedSessions.length : 0
-  const totalSessions = trainingPlan.weeks.reduce((acc, w) => acc + w.sessions.length, 0)
+  // Find today's workout
+  const today = new Date()
+  const todaySession = useMemo(() => {
+    return currentWeek.sessions.find(session => {
+      const sessionDate = new Date(session.date)
+      return sessionDate.toDateString() === today.toDateString()
+    })
+  }, [currentWeek, today])
+
+  // Get this week's upcoming workouts (excluding today)
+  const upcomingWorkouts = useMemo(() => {
+    return currentWeek.sessions.filter(session => {
+      const sessionDate = new Date(session.date)
+      return sessionDate > today || sessionDate.toDateString() === today.toDateString()
+    }).slice(0, 5) // Show max 5 upcoming
+  }, [currentWeek, today])
 
   // Handle actions that require auth
   const handleToggleSession = (sessionId) => {
@@ -95,123 +104,160 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <header className="mb-8 flex justify-between items-start">
+    <main className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
+      {/* Simple Header */}
+      <header className="mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">RoxReady</h1>
-          <p className="text-gray-400 mt-1">
-            {trainingPlan.athlete.name} & {trainingPlan.athlete.partner} • Mixed Doubles
-          </p>
-          <p className="text-sm text-gray-500">
-            Goal: {trainingPlan.athlete.goalTime} (Current: {trainingPlan.athlete.currentTime})
-          </p>
+          <h1 className="text-2xl font-bold text-white">RoxReady</h1>
+          <p className="text-gray-500 text-sm">Week {currentWeek.weekNumber} • {currentWeek.phaseName}</p>
         </div>
-        <div className="text-right">
-          {user ? (
-            <div className="flex items-center gap-4">
-              {user.email === ADMIN_EMAIL && (
-                <Link
-                  href="/feedback"
-                  className="text-sm text-purple-400 hover:text-purple-300"
-                >
-                  Feedback
-                </Link>
-              )}
-              <div>
-                <p className="text-sm text-gray-400">{user.email}</p>
-                <button
-                  onClick={signOut}
-                  className="text-sm text-purple-400 hover:text-purple-300"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
-            >
-              Sign In
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Guest Banner */}
-      {!user && (
-        <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-4 mb-6 flex items-center justify-between">
-          <p className="text-purple-200 text-sm">
-            Sign in to track your progress and add notes to workouts
-          </p>
+        {user ? (
+          <button
+            onClick={signOut}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Sign Out
+          </button>
+        ) : (
           <button
             onClick={() => setShowAuthModal(true)}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors"
+            className="px-4 py-2 bg-gradient-primary text-white rounded-xl text-sm font-medium transition-all hover:scale-105 shadow-lg"
           >
             Sign In
           </button>
+        )}
+      </header>
+
+      {/* Today's Workout - Main Focus */}
+      {todaySession ? (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Today's Workout</h2>
+            <span className="text-sm text-gray-400">{format(new Date(todaySession.date), 'EEEE, MMM d')}</span>
+          </div>
+
+          <div className="bg-gradient-card border border-dark-border rounded-2xl p-6 shadow-xl">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs px-2 py-1 rounded-lg font-medium bg-primary-500/20 text-primary-400 border border-primary-500/30">
+                    {todaySession.type}
+                  </span>
+                  <span className="text-xs text-gray-500">{todaySession.duration}</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{todaySession.title}</h3>
+                <p className="text-gray-400">{todaySession.description}</p>
+                {todaySession.targetPace && (
+                  <p className="text-sm text-primary-400 mt-2">Target: {todaySession.targetPace}</p>
+                )}
+              </div>
+              {user && (
+                <button
+                  onClick={() => handleToggleSession(todaySession.id)}
+                  className={`ml-4 w-8 h-8 rounded-xl border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    completedSessions.includes(todaySession.id)
+                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg'
+                      : 'border-gray-600 hover:border-emerald-500'
+                  }`}
+                >
+                  {completedSessions.includes(todaySession.id) && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Workout Details */}
+            {todaySession.details && (
+              <div className="mt-6 space-y-4 border-t border-dark-border pt-6">
+                {todaySession.details.warmup && (
+                  <div>
+                    <h4 className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">Warm-up</h4>
+                    <p className="text-gray-300 text-sm">{todaySession.details.warmup}</p>
+                  </div>
+                )}
+                {todaySession.details.main && (
+                  <div>
+                    <h4 className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">Main Workout</h4>
+                    <ul className="space-y-1.5">
+                      {todaySession.details.main.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="text-gray-500 mt-0.5">•</span>
+                          <span className="text-gray-300">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Notes Section */}
+            {user && (
+              <div className="mt-6 border-t border-dark-border pt-6">
+                <h4 className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Your Notes</h4>
+                <textarea
+                  value={notes[todaySession.id] || ''}
+                  onChange={(e) => handleSaveNote(todaySession.id, e.target.value)}
+                  placeholder="How did it go? Times, reps, how you felt..."
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+            )}
+
+            {!user && (
+              <div className="mt-6 bg-primary-500/10 border border-primary-500/20 rounded-xl p-4 text-center">
+                <p className="text-primary-300 text-sm mb-3">Sign in to track progress and add notes</p>
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-2 bg-gradient-primary text-white rounded-xl text-sm font-medium transition-all hover:scale-105 shadow-lg"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mb-8 bg-gradient-card border border-dark-border rounded-2xl p-8 text-center">
+          <p className="text-gray-400">No workout scheduled for today. Rest day!</p>
         </div>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Countdown />
-        <PhaseIndicator phase={currentWeek.phase} weekNumber={currentWeek.weekNumber} />
-        <ProgressBar
-          completed={weekCompleted}
-          total={7}
-          label="This Week"
-        />
-        <ProgressBar
-          completed={totalCompleted}
-          total={totalSessions}
-          label="Overall Progress"
-        />
-      </div>
-
-      {/* Week Navigation */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          {trainingPlan.weeks.map((week, index) => {
-            const isCurrentWeek = week.weekNumber === currentWeekNumber
-            const isSelected = index === displayWeekIndex
-            const weekCompletedCount = user ? week.sessions.filter((s) =>
-              completedSessions.includes(s.id)
-            ).length : 0
-            const allComplete = user && weekCompletedCount === 7
-
-            return (
-              <button
-                key={week.weekNumber}
-                onClick={() => setSelectedWeekIndex(index)}
-                className={`
-                  flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-all
-                  ${isSelected
-                    ? 'bg-white text-gray-900'
-                    : isCurrentWeek
-                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }
-                  ${allComplete ? 'ring-2 ring-green-500/50' : ''}
-                `}
-              >
-                W{week.weekNumber}
-                {allComplete && <span className="ml-1 text-green-400">✓</span>}
-              </button>
-            )
-          })}
+      {/* This Week's Workouts */}
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-4">This Week</h2>
+        <div className="grid gap-3">
+          {upcomingWorkouts.map((session) => (
+            <button
+              key={session.id}
+              onClick={() => setSelectedSession(session)}
+              className="bg-gradient-card border border-dark-border rounded-xl p-4 text-left hover:bg-dark-cardHover transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-gray-500">{format(new Date(session.date), 'EEE, MMM d')}</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-dark-bg text-gray-400">{session.type}</span>
+                  </div>
+                  <p className="text-white font-medium">{session.title}</p>
+                  <p className="text-sm text-gray-400 mt-1">{session.duration}</p>
+                </div>
+                {user && completedSessions.includes(session.id) && (
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* Current Week View */}
-      <WeekView
-        week={currentWeek}
-        completedSessions={user ? completedSessions : []}
-        onToggleSession={handleToggleSession}
-        onSelectSession={setSelectedSession}
-        isGuest={!user}
-      />
 
       {/* Session Modal */}
       {selectedSession && (
@@ -229,7 +275,7 @@ export default function Home() {
 
       {/* Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowAuthModal(false)}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowAuthModal(false)}>
           <div onClick={(e) => e.stopPropagation()}>
             <Auth onClose={() => setShowAuthModal(false)} />
           </div>
@@ -239,7 +285,7 @@ export default function Home() {
       {/* Feedback Button */}
       <button
         onClick={() => setShowFeedbackModal(true)}
-        className="fixed bottom-6 right-6 bg-purple-600 hover:bg-purple-500 text-white rounded-full p-4 shadow-lg transition-all hover:scale-105 z-40"
+        className="fixed bottom-6 right-6 bg-gradient-primary text-white rounded-full p-4 shadow-2xl transition-all hover:scale-110 z-40"
         title="Send Feedback"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -250,8 +296,8 @@ export default function Home() {
       {/* Feedback Modal */}
       {showFeedbackModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowFeedbackModal(false)}>
-          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-bold mb-4">Send Feedback</h2>
+          <div className="bg-gradient-card border border-dark-border rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold mb-4 text-white">Send Feedback</h2>
             {feedbackSuccess ? (
               <div className="text-center py-8">
                 <div className="text-green-400 text-4xl mb-2">✓</div>
@@ -263,7 +309,7 @@ export default function Home() {
                   value={feedbackMessage}
                   onChange={(e) => setFeedbackMessage(e.target.value)}
                   placeholder="Share your thoughts, suggestions, or report issues..."
-                  className="w-full h-32 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  className="w-full h-32 px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                 />
                 <div className="flex justify-end gap-3 mt-4">
                   <button
@@ -275,7 +321,7 @@ export default function Home() {
                   <button
                     onClick={handleSubmitFeedback}
                     disabled={feedbackSubmitting || !feedbackMessage.trim()}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gradient-primary text-white rounded-xl font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                   >
                     {feedbackSubmitting ? 'Sending...' : 'Send'}
                   </button>
